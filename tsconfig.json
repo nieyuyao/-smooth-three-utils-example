@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"strictNullChecks": true,
+    "moduleResolution": "node",
+    "module": "ES6",
+    "lib": ["ES2016", "DOM"],
+    "esModuleInterop": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "target": "es6",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "sourceMap": false,
+	}
+}

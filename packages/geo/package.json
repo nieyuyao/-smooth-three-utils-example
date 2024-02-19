@@ -1,0 +1,16 @@
+{
+  "name": "@smooth-three-utils/geo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo test",
+		"build": "echo build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/geojson": "^7946.0.14"
+  }
+}
