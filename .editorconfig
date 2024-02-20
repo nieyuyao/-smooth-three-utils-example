@@ -3,7 +3,7 @@ root = true
 [*]
 end_of_line = lf
 
-[*.{js,ts,json,vue}]
+[*.{js,ts,json,vue,css}]
 indent_style = tab
 indent_size = 2
 charset = utf-8

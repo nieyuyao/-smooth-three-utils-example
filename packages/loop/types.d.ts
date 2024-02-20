@@ -1,8 +1,8 @@
 export interface LoopParams {
 	// 迭代次数
-	iterations: number
+	iterations?: number
 	// 最多划分多少个三角形
-	maxTriangles: number
+	maxTriangles?: number
 }
 
 

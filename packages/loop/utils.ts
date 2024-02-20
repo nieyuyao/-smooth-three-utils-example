@@ -6,12 +6,12 @@ export const vertexId = (x: number, y: number, z: number) => {
 }
 
 export const edgeId = (v1: Vertex, v2: Vertex): string => {
-	return `${v1.id}-${v2.id}`
+	return `${v1.id},${v2.id}`
 }
 
 export const addVertex = (v1: Vertex, v2: Vertex): Vertex => {
 	v1.x += v2.x
-	v1.z += v2.y
+	v1.y += v2.y
 	v1.z += v2.z
 	return v1
 }
@@ -26,6 +26,14 @@ export const cloneVertex = (v: Vertex): Vertex => {
 	return { ...v }
 }
 
+export const makeVertexByIndex = (index: number, positions: TypedArray | Array<number>) => {
+	return makeVertex(
+		positions[index * 3],
+		positions[index * 3 + 1],
+		positions[index * 3 + 2]
+	)
+}
+
 
 export const makeVertex = (x: number, y: number, z: number): Vertex => {
 	const id = vertexId(x, y, z)
@@ -33,8 +41,8 @@ export const makeVertex = (x: number, y: number, z: number): Vertex => {
 }
 
 export const makeEdge = (startIndex: number, endIndex: number, opposite: number, positions: TypedArray, edgesMap: Map<string, Edge>): Edge => {
-	const v0 = makeVertex(positions[startIndex * 3], positions[startIndex * 1], positions[startIndex * 3 + 2])
-	const v1 = makeVertex(positions[endIndex * 3], positions[endIndex * 1], positions[endIndex * 3 + 2])
+	const v0 = makeVertexByIndex(startIndex, positions)
+	const v1 = makeVertexByIndex(endIndex, positions)
 	const id = edgeId(v0, v1)
 	const pairId = edgeId(v1, v0)
 	const pair = edgesMap.get(pairId)
