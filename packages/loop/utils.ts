@@ -1,5 +1,4 @@
-import type { TypedArray } from "three"
-import type { Vertex, Triangle, Edge } from "./types"
+import type { Vertex, Triangle, Edge } from './types'
 
 export const vertexId = (x: number, y: number, z: number) => {
 	return `${x},${y},${z}`
@@ -26,21 +25,22 @@ export const cloneVertex = (v: Vertex): Vertex => {
 	return { ...v }
 }
 
-export const makeVertexByIndex = (index: number, positions: TypedArray | Array<number>) => {
-	return makeVertex(
-		positions[index * 3],
-		positions[index * 3 + 1],
-		positions[index * 3 + 2]
-	)
+export const makeVertexByIndex = (index: number, positions: Array<number>) => {
+	return makeVertex(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2])
 }
-
 
 export const makeVertex = (x: number, y: number, z: number): Vertex => {
 	const id = vertexId(x, y, z)
 	return { x, y, z, id }
 }
 
-export const makeEdge = (startIndex: number, endIndex: number, opposite: number, positions: TypedArray, edgesMap: Map<string, Edge>): Edge => {
+export const makeEdge = (
+	startIndex: number,
+	endIndex: number,
+	opposite: number,
+	positions: number[],
+	edgesMap: Map<string, Edge>
+): Edge => {
 	const v0 = makeVertexByIndex(startIndex, positions)
 	const v1 = makeVertexByIndex(endIndex, positions)
 	const id = edgeId(v0, v1)
@@ -54,7 +54,7 @@ export const makeEdge = (startIndex: number, endIndex: number, opposite: number,
 		startIndex,
 		endIndex,
 		opposite,
-		pairId
+		pairId,
 	}
 }
 

@@ -3,10 +3,15 @@ import type { LoopParams, Vertex, Triangle, Edge } from './types'
 import { makeVertex, addVertex, multiplyScalar, makeTriangle, makeEdge, makeVertexByIndex } from './utils'
 
 const getPositions = (geo: BufferGeometry) => {
-	return geo.getAttribute('position').array
+	return Array.from(geo.getAttribute('position').array)
 }
 
 const betaCache = new Map<number, number>()
+
+const defaultParams: LoopParams = {
+	iterations: 1,
+	maxTriangles: Infinity
+}
 
 class Loop {
 	neighbors = new Map<string, number[]>()
@@ -16,6 +21,8 @@ class Loop {
 	triangles: Triangle[] = []
 
 	newEdgeVertices = new Map<string, Vertex>()
+
+	currentTriangles = 0
 
 	getNeighbors(vertexId: string): number[] {
 		const neighbors = this.neighbors.get(vertexId) ?? []
@@ -35,8 +42,7 @@ class Loop {
 	}
 
 	// 获取BufferGeometry中所有的三角形
-	getTriangles(geo: BufferGeometry) {
-		const positions = getPositions(geo)
+	getTriangles(positions: number[]) {
 		const vertexCount = positions.length / 3
 		// 三角形
 		for (let i = 0; i < vertexCount; i += 3) {
@@ -71,10 +77,14 @@ class Loop {
 		}
 	}
 
-	genEdgeVertices(geo: BufferGeometry) {
+	genEdgeVertices(positions: number[], maxTriangles: number) {
 		let i = 0
-		const positions = getPositions(geo)
 		while (i < this.triangles.length) {
+			this.currentTriangles += 4
+			if (this.currentTriangles > maxTriangles) {
+				return
+			}
+
 			const triangle = this.triangles[i]
 			const { edges } = triangle
 			/**
@@ -107,10 +117,8 @@ class Loop {
 		}
 	}
 
-	repositionOldVertices(geo: BufferGeometry, subdivided: BufferGeometry) {
+	repositionOldVertices(positions: number[], subdivided: number[]) {
 		let i = 0
-		const oldPositions = getPositions(geo)
-		const positions: number[] = []
 		// @ts-ignore
 		const repositionVertex = (v: Vertex) => {
 			const neighbors = this.getNeighbors(v.id)
@@ -127,9 +135,9 @@ class Loop {
 
 			const sum = makeVertex(0, 0, 0)
 			for (let j = 0; j < n; j++) {
-				sum.x += oldPositions[neighbors[j] * 3]
-				sum.y += oldPositions[neighbors[j] * 3 + 1]
-				sum.z += oldPositions[neighbors[j] * 3 + 2]
+				sum.x += positions[neighbors[j] * 3]
+				sum.y += positions[neighbors[j] * 3 + 1]
+				sum.z += positions[neighbors[j] * 3 + 2]
 			}
 			multiplyScalar(beta, sum)
 			multiplyScalar(1 - n * beta, v)
@@ -138,9 +146,9 @@ class Loop {
 		while (i < this.triangles.length) {
 			const triangle = this.triangles[i]
 			const { edges } = triangle
-			const v0 = makeVertexByIndex(edges[0].startIndex, oldPositions)
-			const v1 = makeVertexByIndex(edges[1].startIndex, oldPositions)
-			const v2 = makeVertexByIndex(edges[2].startIndex, oldPositions)
+			const v0 = makeVertexByIndex(edges[0].startIndex, positions)
+			const v1 = makeVertexByIndex(edges[1].startIndex, positions)
+			const v2 = makeVertexByIndex(edges[2].startIndex, positions)
 
 			repositionVertex(v0)
 			repositionVertex(v1)
@@ -150,50 +158,65 @@ class Loop {
 			const ep1 = this.newEdgeVertices.get(edges[1].id)
 			const ep2 = this.newEdgeVertices.get(edges[2].id)
 
+			i++
+
 			if (!ep0 || !ep1 || !ep2) {
 				continue
 			}
-			positions.push(v0.x, v0.y, v0.z)
-			positions.push(ep0.x, ep0.y, ep0.z)
-			positions.push(ep2.x, ep2.y, ep2.z)
+			subdivided.push(v0.x, v0.y, v0.z)
+			subdivided.push(ep0.x, ep0.y, ep0.z)
+			subdivided.push(ep2.x, ep2.y, ep2.z)
 
-			positions.push(ep0.x, ep0.y, ep0.z)
-			positions.push(v1.x, v1.y, v1.z)
-			positions.push(ep1.x, ep1.y, ep1.z)
+			subdivided.push(ep0.x, ep0.y, ep0.z)
+			subdivided.push(v1.x, v1.y, v1.z)
+			subdivided.push(ep1.x, ep1.y, ep1.z)
 
-			positions.push(ep0.x, ep0.y, ep0.z)
-			positions.push(ep1.x, ep1.y, ep1.z)
-			positions.push(ep2.x, ep2.y, ep2.z)
+			subdivided.push(ep0.x, ep0.y, ep0.z)
+			subdivided.push(ep1.x, ep1.y, ep1.z)
+			subdivided.push(ep2.x, ep2.y, ep2.z)
 
-			positions.push(ep1.x, ep1.y, ep1.z)
-			positions.push(v2.x, v2.y, v2.z)
-			positions.push(ep2.x, ep2.y, ep2.z)
-
-			i++
+			subdivided.push(ep1.x, ep1.y, ep1.z)
+			subdivided.push(v2.x, v2.y, v2.z)
+			subdivided.push(ep2.x, ep2.y, ep2.z)
 		}
-
-		//
-		subdivided.setAttribute(
-			'position',
-			new BufferAttribute(new (oldPositions.constructor as unknown as Float32ArrayConstructor)(positions), 3)
-		)
 	}
 
-	subdivide(geo: BufferGeometry): BufferGeometry {
+	subdivide(geo: BufferGeometry, params?: LoopParams): BufferGeometry {
 		const subdivided = new BufferGeometry()
-		console.log('====triangles====')
-		this.getTriangles(geo)
-		console.log('====newVertices====')
-		this.genEdgeVertices(geo)
-		console.log(this.newEdgeVertices)
-		console.log('====oldVertices====')
-		this.repositionOldVertices(geo, subdivided)
+		const finalParams = {
+			...defaultParams,
+			...params,
+		}
+
+		const { iterations, maxTriangles } = finalParams
+		let positions = getPositions(geo)
+		let	newPositions: number[] = []
+		for (let i = 0; i < iterations!; i++) {
+			this.neighbors.clear()
+			this.triangles.length = 0
+			this.edgesMap.clear()
+			this.newEdgeVertices.clear()
+			this.getTriangles(positions)
+			this.genEdgeVertices(positions, maxTriangles!)
+			this.repositionOldVertices(positions, newPositions)
+			positions = newPositions
+			newPositions = []
+			if (this.currentTriangles > maxTriangles!) {
+				break
+			}
+		}
+		//
+		this.currentTriangles = 0
+		subdivided.setAttribute(
+			'position',
+			new BufferAttribute(new (geo.getAttribute('position').array.constructor as unknown as Float32ArrayConstructor)(positions), 3)
+		)
+
 		return subdivided
 	}
 }
 
 export const loopSubdivide = (geo: BufferGeometry, params?: LoopParams): BufferGeometry => {
-	console.log(params, '=====params====')
 	const loop = new Loop()
-	return loop.subdivide(geo)
+	return loop.subdivide(geo, params)
 }

@@ -19,44 +19,44 @@ onMounted(() => {
 	scene.background = new THREE.Color(0x444444)
 	new OrbitControls(camera, renderer.domElement)
 
-	// const geo = new THREE.BoxGeometry(10, 10, 10)
-	// const mat = new THREE.MeshBasicMaterial({
-	// 	wireframe: true,
-	// 	color: 0xffffff
-	// })
-	// const box = new THREE.Mesh(geo, mat)
-	// scene.add(box)
-
-	// const subdividedGeo = loopSubdivide(geo.toNonIndexed())
-
-	// const subdividedBox = new THREE.Mesh(subdividedGeo, mat)
-
-	// scene.add(subdividedBox)
-
-	// subdividedBox.rotateY(-Math.PI / 2)
-
-	const triangleShape = new THREE.Shape()
-	triangleShape.moveTo(0, 10)
-	triangleShape.lineTo(10, 0)
-	triangleShape.lineTo(-10, 0)
-
-	const triangleGeo = new THREE.ShapeGeometry(triangleShape)
-
+	const geo = new THREE.BoxGeometry(10, 10, 10)
 	const mat = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0xffffff
 	})
-	const triangle = new THREE.Mesh(triangleGeo, mat)
+	// const box = new THREE.Mesh(geo, mat)
+	// scene.add(box)
 
-	scene.add(triangle)
+	const subdividedGeo = loopSubdivide(geo.toNonIndexed(), { iterations: 4, maxTriangles: Infinity })
 
-	const newTriangleGeo= triangleGeo.toNonIndexed()
+	const subdividedBox = new THREE.Mesh(subdividedGeo, mat)
 
-	const newTriangle = new THREE.Mesh(loopSubdivide(newTriangleGeo), mat)
+	scene.add(subdividedBox)
 
-	scene.add(newTriangle)
+	subdividedBox.rotateY(-Math.PI / 2)
 
-	newTriangle.position.y = 20
+	// const triangleShape = new THREE.Shape()
+	// triangleShape.moveTo(0, 10)
+	// triangleShape.lineTo(10, 0)
+	// triangleShape.lineTo(-10, 0)
+
+	// const triangleGeo = new THREE.ShapeGeometry(triangleShape)
+
+	// const mat = new THREE.MeshBasicMaterial({
+	// 	wireframe: true,
+	// 	color: 0xffffff
+	// })
+	// const triangle = new THREE.Mesh(triangleGeo, mat)
+
+	// scene.add(triangle)
+
+	// const newTriangleGeo= triangleGeo.toNonIndexed()
+
+	// const newTriangle = new THREE.Mesh(loopSubdivide(newTriangleGeo, { iterations: 2 }), mat)
+
+	// scene.add(newTriangle)
+
+	// newTriangle.position.y = 10
 
 	const render = () => {
 		requestAnimationFrame(render)
@@ -71,4 +71,8 @@ onMounted(() => {
 	</div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="css" scoped>
+canvas {
+	display: block;
+}
+</style>
