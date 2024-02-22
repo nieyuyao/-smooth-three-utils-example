@@ -1,16 +1,19 @@
 export interface LoopParams {
+	onlySplit?: boolean
 	// 迭代次数
 	iterations?: number
 	// 最多划分多少个三角形
 	maxTriangles?: number
+	// 是否细分uv
+	loopUv?: boolean
+	// 是否修改法线
+	modifyNormal?: boolean
 }
 
 
 export interface Vertex {
-	x: number
-	y: number
-	z: number
 	id: string,
+	coords: number[]
 }
 
 export interface Edge {
@@ -25,5 +28,10 @@ type Normal = Vertex
 
 export interface Triangle {
 	edges: Edge[]
-	normal: Normal | null
 }
+
+export interface Attribute {
+	array: number[]
+	itemSize: number
+}
+

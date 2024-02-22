@@ -1,68 +1,73 @@
 <script lang="ts" setup>
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, shallowRef } from 'vue'
 import { loopSubdivide } from '../packages/loop'
+import mapUrl from './uv_map.jpeg'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
-onMounted(() => {
+const rendererRef = shallowRef<THREE.WebGLRenderer | null>(null)
+
+const sceneRef = shallowRef<THREE.Scene | null>(null)
+
+const loader = new THREE.TextureLoader()
+
+onMounted(async () => {
 	if (!canvasRef.value) {
 		return
 	}
 	const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasRef.value, alpha: true })
+	renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 	renderer.setPixelRatio(window.devicePixelRatio)
 	renderer.setSize(window.innerWidth, window.innerHeight)
+	rendererRef.value = renderer
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 50)
 	camera.position.z = 30
 	const scene = new THREE.Scene()
 	scene.background = new THREE.Color(0x444444)
+	sceneRef.value = scene
 	new OrbitControls(camera, renderer.domElement)
-
 	const geo = new THREE.BoxGeometry(10, 10, 10)
+
+	const texture = await loader.loadAsync(mapUrl)
 	const mat = new THREE.MeshBasicMaterial({
-		wireframe: true,
-		color: 0xffffff
+		// wireframe: true,
+		map: texture,
 	})
-	// const box = new THREE.Mesh(geo, mat)
-	// scene.add(box)
-
-	const subdividedGeo = loopSubdivide(geo.toNonIndexed(), { iterations: 4, maxTriangles: Infinity })
-
+	const subdividedGeo = loopSubdivide(geo.toNonIndexed(), { iterations: 1, maxTriangles: Infinity, loopUv: false, onlySplit: true })
 	const subdividedBox = new THREE.Mesh(subdividedGeo, mat)
-
 	scene.add(subdividedBox)
-
-	subdividedBox.rotateY(-Math.PI / 2)
-
-	// const triangleShape = new THREE.Shape()
-	// triangleShape.moveTo(0, 10)
-	// triangleShape.lineTo(10, 0)
-	// triangleShape.lineTo(-10, 0)
-
-	// const triangleGeo = new THREE.ShapeGeometry(triangleShape)
-
-	// const mat = new THREE.MeshBasicMaterial({
-	// 	wireframe: true,
-	// 	color: 0xffffff
-	// })
-	// const triangle = new THREE.Mesh(triangleGeo, mat)
-
-	// scene.add(triangle)
-
-	// const newTriangleGeo= triangleGeo.toNonIndexed()
-
-	// const newTriangle = new THREE.Mesh(loopSubdivide(newTriangleGeo, { iterations: 2 }), mat)
-
-	// scene.add(newTriangle)
-
-	// newTriangle.position.y = 10
 
 	const render = () => {
 		requestAnimationFrame(render)
 		renderer.render(scene, camera)
 	}
 	render()
+})
+
+onUnmounted(() => {
+	rendererRef.value?.dispose()
+
+	sceneRef.value?.traverse((obj) => {
+    try {
+      if (obj instanceof THREE.Mesh) {
+        obj.geometry.dispose()
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+        mats.forEach((mat) => {
+          mat.dispose()
+        })
+      } else if (obj instanceof THREE.AmbientLight) {
+        obj.dispose()
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    if (obj instanceof THREE.Light) {
+      obj.dispose()
+    }
+  })
+  sceneRef.value?.clear()
 })
 </script>
 <template>
