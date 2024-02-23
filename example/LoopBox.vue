@@ -35,7 +35,12 @@ onMounted(async () => {
 		// wireframe: true,
 		map: texture,
 	})
-	const subdividedGeo = loopSubdivide(geo.toNonIndexed(), { iterations: 1, maxTriangles: Infinity, loopUv: false, onlySplit: true })
+	const subdividedGeo = loopSubdivide(geo.toNonIndexed(), {
+		iterations: 5,
+		maxTriangles: Infinity,
+		loopUv: false,
+		onlySplit: false
+	})
 	const subdividedBox = new THREE.Mesh(subdividedGeo, mat)
 	scene.add(subdividedBox)
 
@@ -50,24 +55,24 @@ onUnmounted(() => {
 	rendererRef.value?.dispose()
 
 	sceneRef.value?.traverse((obj) => {
-    try {
-      if (obj instanceof THREE.Mesh) {
-        obj.geometry.dispose()
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-        mats.forEach((mat) => {
-          mat.dispose()
-        })
-      } else if (obj instanceof THREE.AmbientLight) {
-        obj.dispose()
-      }
-    } catch (e) {
-      console.error(e)
-    }
-    if (obj instanceof THREE.Light) {
-      obj.dispose()
-    }
-  })
-  sceneRef.value?.clear()
+		try {
+			if (obj instanceof THREE.Mesh) {
+				obj.geometry.dispose()
+				const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+				mats.forEach((mat) => {
+					mat.dispose()
+				})
+			} else if (obj instanceof THREE.AmbientLight) {
+				obj.dispose()
+			}
+		} catch (e) {
+			console.error(e)
+		}
+		if (obj instanceof THREE.Light) {
+			obj.dispose()
+		}
+	})
+	sceneRef.value?.clear()
 })
 </script>
 <template>

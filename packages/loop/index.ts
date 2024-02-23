@@ -1,6 +1,6 @@
 import { BufferGeometry, BufferAttribute } from 'three'
 import type { LoopParams, Vertex, Triangle, Edge, Attribute } from './types'
-import { makeVertex, addVertex, multiplyScalar, makeTriangle, makeEdge, makeVertexByIndex, pushVertex2Array, vertexId } from './utils'
+import { makeVertex, addVertex, multiplyScalar, makeTriangle, makeEdge, makeVertexByIndex, pushVertex2Array } from './utils'
 
 const betaCache = new Map<number, number>()
 
@@ -106,10 +106,10 @@ class Loop {
 		let i = 0
 		const otherAttributes = this.otherAttributes
 		while (i < this.triangles.length) {
-			this.currentTriangles += 4
 			if (this.currentTriangles > params.maxTriangles) {
 				return
 			}
+			this.currentTriangles += 3
 
 			const triangle = this.triangles[i]
 			const { edges } = triangle
@@ -172,7 +172,7 @@ class Loop {
 			const v1 = makeVertexByIndex(edges[1].startIndex, array, itemSize)
 			const v2 = makeVertexByIndex(edges[2].startIndex, array, itemSize)
 
-			if (!params.onlySplit) {
+			if (!params.onlySplit && (params.loopUv || name !== 'uv')) {
 				this.repositionVertex(v0, array, edges[0].startIndex, itemSize)
 				this.repositionVertex(v1, array, edges[1].startIndex, itemSize)
 				this.repositionVertex(v2, array, edges[2].startIndex, itemSize)
@@ -183,7 +183,10 @@ class Loop {
 			const ep2 = this.newEdgeVertices.get(edges[2].id)?.[name]
 
 			if (!ep0 || !ep1 || !ep2) {
-				return
+				pushVertex2Array(v0, subdivided)
+				pushVertex2Array(v1, subdivided)
+				pushVertex2Array(v2, subdivided)
+				continue
 			}
 
 			pushVertex2Array(v0, subdivided)
@@ -219,7 +222,7 @@ class Loop {
 			...params,
 		} as Required<LoopParams>
 
-		const { iterations, maxTriangles } = finalParams
+		const { iterations } = finalParams
 
 		const existPositionAttribute = geo.attributes.position
 
@@ -246,12 +249,14 @@ class Loop {
 			this.edgesMap.clear()
 			this.newEdgeVertices.clear()
 			this.getTriangles(this.positionAttribute)
+			this.currentTriangles = this.triangles.length
 			this.genEdgeVertices(this.positionAttribute, finalParams)
 			this.repositionOldVertices(finalParams)
-			// swap
-			if (this.currentTriangles > maxTriangles!) {
-				break
-			}
+		}
+
+
+		if (finalParams.maxTriangles === 6) {
+			console.log(this.currentTriangles)
 		}
 
 		subdivided.setAttribute(
@@ -277,10 +282,12 @@ class Loop {
 		})
 
 		//
+		this.triangles.length = 0
 		this.currentTriangles = 0
-
-		console.log(this.neighbors)
-
+		this.neighbors.clear()
+		this.edgesMap.clear()
+		this.newEdgeVertices.clear()
+		this.otherAttributes.clear()
 		return subdivided
 	}
 }

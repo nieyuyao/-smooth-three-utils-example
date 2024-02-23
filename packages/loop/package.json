@@ -2,8 +2,13 @@
   "name": "@smooth-three-utils/loop",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {},
+	"module": "dist/esm/index.js",
+	"main": "dist/cjs/index.js",
+	"types": "index.d.ts",
+  "scripts": {
+		"build:esm": "tsc -m ES6 --outDir ./dist/esm",
+		"build:cjs": "tsc -m commonjs --outDir ./dist/cjs"
+	},
   "keywords": [],
   "author": "",
   "license": "MIT"
