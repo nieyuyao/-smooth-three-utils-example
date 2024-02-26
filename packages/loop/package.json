@@ -6,6 +6,7 @@
 	"main": "dist/cjs/index.js",
 	"types": "index.d.ts",
   "scripts": {
+		"test": "jest --config ../../jest.config.js",
 		"build:esm": "tsc -m ES6 --outDir ./dist/esm",
 		"build:cjs": "tsc -m commonjs --outDir ./dist/cjs"
 	},

@@ -25,7 +25,7 @@ onMounted(async () => {
 	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 50)
 	camera.position.z = 30
 	const scene = new THREE.Scene()
-	scene.background = new THREE.Color(0x444444)
+	scene.background = new THREE.Color(0x000000)
 	sceneRef.value = scene
 	new OrbitControls(camera, renderer.domElement)
 	const geo = new THREE.BoxGeometry(10, 10, 10)

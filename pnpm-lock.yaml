@@ -6,10 +6,13 @@ importers:
     specifiers:
       '@turf/bezier-spline': ^6.5.0
       '@turf/helpers': ^6.5.0
+      '@types/d3-geo': ^3.1.0
       '@types/dat.gui': ^0.7.12
+      '@types/geojson': ^7946.0.14
       '@types/jest': ^29.5.12
       '@types/three': ^0.161.2
       '@vitejs/plugin-vue': 5.0.4
+      d3-geo: ^3.1.0
       dat.gui: ^0.7.9
       jest: ^29.7.0
       simplify-js: ^1.2.4
@@ -25,10 +28,13 @@ importers:
       simplify-js: 1.2.4
       typescript: 5.3.3
     devDependencies:
+      '@types/d3-geo': 3.1.0
       '@types/dat.gui': 0.7.12
+      '@types/geojson': 7946.0.14
       '@types/jest': 29.5.12
       '@types/three': 0.161.2
       '@vitejs/plugin-vue': 5.0.4_vite@5.1.1+vue@3.4.19
+      d3-geo: 3.1.0
       dat.gui: 0.7.9
       jest: 29.7.0
       three: 0.161.0
@@ -1027,6 +1033,12 @@ packages:
       '@babel/types': 7.23.9
     dev: true
 
+  /@types/d3-geo/3.1.0:
+    resolution: {integrity: sha512-856sckF0oP/diXtS4jNsiQw/UuK5fQG8l/a9VVLeSouf1/PPbBE1i1W852zVwKwYCBkFJJB7nCFTbk6UMEXBOQ==}
+    dependencies:
+      '@types/geojson': 7946.0.14
+    dev: true
+
   /@types/dat.gui/0.7.12:
     resolution: {integrity: sha512-el5dYeQZu2r6YW6Ft4rGtjr/dLe/uzXESMoie5UM6/weVShB1V8IRpXtTKrczd4qe7044fTKZS2l8d6EBFOkoA==}
     dev: true
@@ -1037,7 +1049,6 @@ packages:
 
   /@types/geojson/7946.0.14:
     resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
-    dev: false
 
   /@types/graceful-fs/4.1.9:
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
@@ -1485,6 +1496,20 @@ packages:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
     dev: true
 
+  /d3-array/3.2.4:
+    resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
+    engines: {node: '>=12'}
+    dependencies:
+      internmap: 2.0.3
+    dev: true
+
+  /d3-geo/3.1.0:
+    resolution: {integrity: sha512-JEo5HxXDdDYXCaWdwLRt79y7giK8SbhZJbFWXqbRTolCHFI5jRqteLzCsq51NKbUoX0PjBVSohxrx+NoOUujYA==}
+    engines: {node: '>=12'}
+    dependencies:
+      d3-array: 3.2.4
+    dev: true
+
   /dat.gui/0.7.9:
     resolution: {integrity: sha512-sCNc1OHobc+Erc1HqiswYgHdVNpSJUlk/Hz8vzOCsER7rl+oF/4+v8GXFUyCgtXpoCX6+bnmg07DedLvBLwYKQ==}
     dev: true
@@ -1770,6 +1795,11 @@ packages:
 
   /inherits/2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
+    dev: true
+
+  /internmap/2.0.3:
+    resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
+    engines: {node: '>=12'}
     dev: true
 
   /is-arrayish/0.2.1:

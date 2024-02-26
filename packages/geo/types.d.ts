@@ -1,4 +1,6 @@
 export interface Params {
-	tolerance: number
-	highQuality: boolean
+	tolerance?: number
+	highQuality?: boolean
+	smooth?: boolean
+	resolution?: number
 }

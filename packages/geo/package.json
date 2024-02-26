@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+	"types": "index.d.ts",
   "scripts": {
-    "test": "echo test",
+    "test": "jest --watch --config ../../jest.config.js",
 		"build": "echo build"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "@types/geojson": "^7946.0.14"
   }
 }

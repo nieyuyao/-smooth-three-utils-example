@@ -116,8 +116,8 @@ class Loop {
 			/**
 			 *      v0
 			 *    /     \
-			 * 	new			new
-			 *  /          \
+			 * 	new	 ——	new
+			 *  /   \  /     \
 			 * v1 —— new —— v2
 			 */
 			for (let j = 0; j < edges.length; j++) {
