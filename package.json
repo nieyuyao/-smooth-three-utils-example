@@ -1,5 +1,5 @@
 {
-  "name": "@smooth-three-utils/main",
+  "name": "@threejs-geometry-utils/main",
   "version": "0.0.1",
   "description": "geometry utils",
   "main": "index.js",

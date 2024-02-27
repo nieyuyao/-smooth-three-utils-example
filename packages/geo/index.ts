@@ -1,17 +1,17 @@
 import simplify from 'simplify-js'
 import type { GeoJSON, Geometry, GeometryCollection, Position } from 'geojson'
 import { lineString } from '@turf/helpers'
-import type { Params } from './types'
+import type { SimplifyParams } from './types'
 import bezier from '@turf/bezier-spline'
 
-const defaultParams: Params = {
+const defaultParams: SimplifyParams = {
 	tolerance: 1,
 	highQuality: false,
 	smooth: false,
 	resolution: 10_0000
 }
 
-const simplifyPositions = (positions: Position[], params: Required<Params>): Position[] => {
+const simplifyPositions = (positions: Position[], params: Required<SimplifyParams>): Position[] => {
 	const points = positions.map(([x, y]) => {
 		return { x, y }
 	})
@@ -23,14 +23,14 @@ const simplifyPositions = (positions: Position[], params: Required<Params>): Pos
 	return simplified
 }
 
-const simplifyPolygon = (polygon: Position[][], params: Required<Params>): Position[][] => {
+const simplifyPolygon = (polygon: Position[][], params: Required<SimplifyParams>): Position[][] => {
 	return polygon.reduce((newPolygon, positions) => {
 		newPolygon.push(simplifyPositions(positions, params))
 		return newPolygon
 	}, [] as Position[][])
 }
 
-const simplifyGeometry = (geometry: Geometry, params: Required<Params>) => {
+const simplifyGeometry = (geometry: Geometry, params: Required<SimplifyParams>) => {
 	const { type } = geometry
 	if (type === 'GeometryCollection') {
 		const geometries = (geometry as GeometryCollection).geometries
@@ -53,11 +53,11 @@ const simplifyGeometry = (geometry: Geometry, params: Required<Params>) => {
 	}
 }
 
-export const simplifyGeo = (geoJSON: GeoJSON, params?: Params): GeoJSON => {
+export const simplifyGeo = (geoJSON: GeoJSON, params?: SimplifyParams): GeoJSON => {
 	const finalParams = {
 		...defaultParams,
 		...params
-	} as Required<Params>
+	} as Required<SimplifyParams>
 	const newGeoJSON = JSON.parse(JSON.stringify(geoJSON)) as GeoJSON
 	if (newGeoJSON.type === 'FeatureCollection') {
 		for (const feature of newGeoJSON.features) {

@@ -1,4 +1,4 @@
-export interface Params {
+export interface SimplifyParams {
 	tolerance?: number
 	highQuality?: boolean
 	smooth?: boolean

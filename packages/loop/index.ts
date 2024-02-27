@@ -1,6 +1,16 @@
 import { BufferGeometry, BufferAttribute } from 'three'
 import type { LoopParams, Vertex, Triangle, Edge, Attribute } from './types'
-import { makeVertex, addVertex, multiplyScalar, makeTriangle, makeEdge, makeVertexByIndex, pushVertex2Array } from './utils'
+import {
+	makeVertex,
+	addVertex,
+	multiplyScalar,
+	makeTriangle,
+	makeEdge,
+	makeVertexByIndex,
+	calcTriangleNormal,
+	pushVerticesArray,
+	repeatVertex2Array,
+} from './utils'
 
 const betaCache = new Map<number, number>()
 
@@ -19,7 +29,7 @@ class Loop {
 
 	triangles: Triangle[] = []
 
-	newEdgeVertices = new Map<string, { [attrName: string]: Vertex}>()
+	newEdgeVertices = new Map<string, { [attrName: string]: Vertex }>()
 
 	currentTriangles = 0
 
@@ -87,8 +97,7 @@ class Loop {
 		const { array, itemSize } = attribute
 		const edgePoint = makeVertexByIndex(edge.startIndex, array, itemSize, ignoreId)
 		addVertex(edgePoint, makeVertexByIndex(edge.endIndex, array, itemSize, ignoreId))
-
-		if ((!params.loopUv && name === 'uv') || params.onlySplit) {
+		if (params.onlySplit || (!params.loopUv && name === 'uv') || (!params.modifyNormal && name === 'normal')) {
 			multiplyScalar(1 / 2, edgePoint)
 		} else if (pair) {
 			multiplyScalar(3 / 8, edgePoint)
@@ -124,8 +133,8 @@ class Loop {
 				const e = edges[j]
 				const edgePoint = this.calcEdgeVertex(e, positionAttribute, 'position', params)
 				const newEdgeVertex = {
-					position: edgePoint
-				} as { [k: string]: Vertex}
+					position: edgePoint,
+				} as { [k: string]: Vertex }
 				this.newEdgeVertices.set(e.id, newEdgeVertex)
 				// uv, normal...
 				otherAttributes.forEach((attr, name) => {
@@ -168,51 +177,59 @@ class Loop {
 		while (i < this.triangles.length) {
 			const { edges } = this.triangles[i]
 			i++
-			const v0 = makeVertexByIndex(edges[0].startIndex, array, itemSize)
-			const v1 = makeVertexByIndex(edges[1].startIndex, array, itemSize)
-			const v2 = makeVertexByIndex(edges[2].startIndex, array, itemSize)
+			if (params.modifyNormal && name === 'normal') {
+				const v0 = makeVertexByIndex(edges[0].startIndex, this.positionAttribute.array, this.positionAttribute.itemSize)
+				const v1 = makeVertexByIndex(edges[1].startIndex, this.positionAttribute.array, this.positionAttribute.itemSize)
+				const v2 = makeVertexByIndex(edges[2].startIndex, this.positionAttribute.array, this.positionAttribute.itemSize)
+				const ep0 = this.newEdgeVertices.get(edges[0].id)?.position
+				const ep1 = this.newEdgeVertices.get(edges[1].id)?.position
+				const ep2 = this.newEdgeVertices.get(edges[2].id)?.position
+				if (!ep0 || !ep1 || !ep2) {
+					repeatVertex2Array(subdivided, calcTriangleNormal(v0, v1, v2), 3)
+					continue
+				}
+				repeatVertex2Array(subdivided, calcTriangleNormal(v0, ep0, ep2), 3)
+				repeatVertex2Array(subdivided, calcTriangleNormal(ep0, v1, ep1), 3)
+				repeatVertex2Array(subdivided, calcTriangleNormal(ep0, ep1, ep2), 3)
+				repeatVertex2Array(subdivided, calcTriangleNormal(ep1, v2, ep2), 3)
+			} else {
+				const v0 = makeVertexByIndex(edges[0].startIndex, array, itemSize)
+				const v1 = makeVertexByIndex(edges[1].startIndex, array, itemSize)
+				const v2 = makeVertexByIndex(edges[2].startIndex, array, itemSize)
 
-			if (!params.onlySplit && (params.loopUv || name !== 'uv')) {
-				this.repositionVertex(v0, array, edges[0].startIndex, itemSize)
-				this.repositionVertex(v1, array, edges[1].startIndex, itemSize)
-				this.repositionVertex(v2, array, edges[2].startIndex, itemSize)
+				if (!params.onlySplit && (params.loopUv || name !== 'uv' && name !== 'normal')) {
+					this.repositionVertex(v0, array, edges[0].startIndex, itemSize)
+					this.repositionVertex(v1, array, edges[1].startIndex, itemSize)
+					this.repositionVertex(v2, array, edges[2].startIndex, itemSize)
+				}
+				const ep0 = this.newEdgeVertices.get(edges[0].id)?.[name]
+				const ep1 = this.newEdgeVertices.get(edges[1].id)?.[name]
+				const ep2 = this.newEdgeVertices.get(edges[2].id)?.[name]
+				if (!ep0 || !ep1 || !ep2) {
+					pushVerticesArray(subdivided, v0, v1, v2)
+					continue
+				}
+				pushVerticesArray(subdivided, v0, ep0, ep2, ep0, v1, ep1, ep0 ,ep1, ep2, ep1, v2, ep2)
 			}
-
-			const ep0 = this.newEdgeVertices.get(edges[0].id)?.[name]
-			const ep1 = this.newEdgeVertices.get(edges[1].id)?.[name]
-			const ep2 = this.newEdgeVertices.get(edges[2].id)?.[name]
-
-			if (!ep0 || !ep1 || !ep2) {
-				pushVertex2Array(v0, subdivided)
-				pushVertex2Array(v1, subdivided)
-				pushVertex2Array(v2, subdivided)
-				continue
-			}
-
-			pushVertex2Array(v0, subdivided)
-			pushVertex2Array(ep0, subdivided)
-			pushVertex2Array(ep2, subdivided)
-
-			pushVertex2Array(ep0, subdivided)
-			pushVertex2Array(v1, subdivided)
-			pushVertex2Array(ep1, subdivided)
-
-			pushVertex2Array(ep0, subdivided)
-			pushVertex2Array(ep1, subdivided)
-			pushVertex2Array(ep2, subdivided)
-
-			pushVertex2Array(ep1, subdivided)
-			pushVertex2Array(v2, subdivided)
-			pushVertex2Array(ep2, subdivided)
 		}
 		attribute.array = subdivided
 	}
 
 	repositionOldVertices(params: Required<LoopParams>) {
 		this.otherAttributes.forEach((attr, name) => {
+			if (name === 'normal') {
+				return
+			}
 			this.repositionAttribute(attr, name, params)
 		})
+
 		this.repositionAttribute(this.positionAttribute, 'position', params)
+
+		const normalAttribute = this.otherAttributes.get('normal')
+
+		if (normalAttribute) {
+			this.repositionAttribute(normalAttribute, 'normal', params)
+		}
 	}
 
 	subdivide(geo: BufferGeometry, params?: LoopParams): BufferGeometry {
@@ -254,11 +271,6 @@ class Loop {
 			this.repositionOldVertices(finalParams)
 		}
 
-
-		if (finalParams.maxTriangles === 6) {
-			console.log(this.currentTriangles)
-		}
-
 		subdivided.setAttribute(
 			'position',
 			new BufferAttribute(
@@ -273,9 +285,7 @@ class Loop {
 			subdivided.setAttribute(
 				name,
 				new BufferAttribute(
-					new (geo.getAttribute(name).array.constructor as unknown as Float32ArrayConstructor)(
-						attr.array
-					),
+					new (geo.getAttribute(name).array.constructor as unknown as Float32ArrayConstructor)(attr.array),
 					attr.itemSize
 				)
 			)

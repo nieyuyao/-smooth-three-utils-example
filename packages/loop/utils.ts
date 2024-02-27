@@ -52,7 +52,7 @@ export const multiplyScalar = (k: number, v: Vertex) => {
 }
 
 export const cloneVertex = (v: Vertex): Vertex => {
-	return { ...v }
+	return { id: v.id, coords: Array.from(v.coords) }
 }
 
 export const makeVertexByIndex = (index: number, array: Array<number>, itemSize: number, ignoreId = false) => {
@@ -102,13 +102,27 @@ export const makeTriangle = (edges: Edge[]): Triangle => {
 }
 
 export const calcTriangleNormal = (v1: Vertex, v2: Vertex, v3: Vertex) => {
-	const temp1 = subVertex(cloneVertex(v1), v2)
-	const temp2 = subVertex(cloneVertex(v1), v3)
+	const temp1 = subVertex(cloneVertex(v2), v1)
+	const temp2 = subVertex(cloneVertex(v3), v1)
 
-	return crossVertex(temp1, temp2)
+	const n = crossVertex(temp1, temp2)
+
+	const length = Math.sqrt(n.coords[0] * n.coords[0] + n.coords[1] * n.coords[1] + n.coords[2] * n.coords[2])
+
+	multiplyScalar(1 / length, n)
+	return n
 }
 
 
-export const pushVertex2Array = (v: Vertex, array: number[]) => {
+export const pushVertex2Array = (array: number[], v: Vertex) => {
 	array.push(...v.coords)
+}
+
+
+export const pushVerticesArray = (array: number[], ...vs: Vertex[]) => {
+	vs.forEach(v => pushVertex2Array(array, v))
+}
+
+export const repeatVertex2Array  = (array: number[], v: Vertex, repeats: number) => {
+	new Array(repeats).fill(0).forEach(() => pushVertex2Array(array, v))
 }

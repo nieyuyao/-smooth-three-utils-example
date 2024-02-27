@@ -1,11 +1,11 @@
 {
-  "name": "@smooth-three-utils/geo",
+  "name": "@threejs-geometry-utils/geo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
 	"types": "index.d.ts",
   "scripts": {
-    "test": "jest --watch --config ../../jest.config.js",
+    "test": "jest --watch",
 		"build": "echo build"
   },
   "keywords": [],
