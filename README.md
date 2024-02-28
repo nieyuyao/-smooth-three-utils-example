@@ -2,6 +2,14 @@
     An simple example of smooth GeoJSON and Loop Subdivision
 </div>
 
+
+#### Steps
+
+```
+pnpm i
+pnpm dev
+```
+
 #### Loop Subdivision
 
 ```javascript
@@ -62,3 +70,4 @@ scene.add(group)
 - after
 
 <img style="width: 40%" src="./screenshots/screenshot-5.png"></img>
+
